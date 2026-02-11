@@ -2,7 +2,9 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using BasicWebServer.Server.Contracts;
 using BasicWebServer.Server.HTTP;
+using BasicWebServer.Server.Routing;
 
 namespace BasicWebServer.Server
 {
@@ -11,13 +13,25 @@ namespace BasicWebServer.Server
         private readonly IPAddress ipAddress;
         private readonly int port;
         private readonly TcpListener listener;
-
-        public HttpServer(string address, int port)
+        private readonly RoutingTable routingTable;
+        public HttpServer(string address, int port, Action<IRoutingTable> routingTableConfiguration)
         {
             this.ipAddress = IPAddress.Parse(address);
             this.port = port;
 
             this.listener = new TcpListener(this.ipAddress, this.port);
+            routingTableConfiguration(this.routingTable = new RoutingTable());
+        }
+
+        public HttpServer(int port, Action<IRoutingTable> routingTable)
+            :this("127.0.1", port, routingTable)
+        {
+
+        }
+        public HttpServer( Action<IRoutingTable> routingTable)
+           : this(8080,  routingTable)
+        {
+
         }
 
         public void Start()
@@ -30,30 +44,21 @@ namespace BasicWebServer.Server
 
                 using NetworkStream networkStream = client.GetStream();
 
-                string requestText = ReadRequest(networkStream);
-                Console.WriteLine(requestText);
-
+                string requestString = ReadRequest(networkStream);
+                Console.WriteLine(requestString);
+                var request = Request.Parse(requestString);
                 WriteResponse(networkStream, "Hello from the server!");
 
-                client.Close();
+                var response = this.routingTable.MatchRequest(request);
+                WriteResponse(networkStream, response);
+                 client.Close();
             }
         }
 
-        private static void WriteResponse(NetworkStream networkStream, string message)
+        public static void WriteResponse(NetworkStream networkStream, Response response)
         {
-            byte[] responseBodyBytes = Encoding.UTF8.GetBytes(message);
-            int responseBodyLength = responseBodyBytes.Length;
-
-            string response =
-                "HTTP/1.1 200 OK\r\n" +
-                "Content-Type: text/plain; charset=UTF-8\r\n" +
-                $"Content-Length: {responseBodyLength}\r\n" +
-                "\r\n" +
-                message;
-
-            byte[] responseBytes = Encoding.UTF8.GetBytes(response);
-
-            networkStream.Write(responseBytes, 0, responseBytes.Length);
+            var responseBytes = Encoding.UTF8.GetBytes(response.ToString());
+            networkStream.Write(res);
         }
 
         private static string ReadRequest(NetworkStream networkStream)
