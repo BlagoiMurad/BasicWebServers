@@ -1,17 +1,16 @@
 ﻿using BasicWebServer.Server.Common;
-using BasicWebServer.Server.HTTP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BasicWebServer.Server.Responses
+namespace BasicWebServer.Server.HTTP
 {
     public class ContentResponse : Response
     {
         public ContentResponse(string content, string contentType, Action<Request, Response> preRenderAction = null)
-           : base(StatusCode.OK)
+                 : base(StatusCode.OK)
         {
             Guard.AgainstNull(content);
             Guard.AgainstNull(contentType);
@@ -25,4 +24,5 @@ namespace BasicWebServer.Server.Responses
             this.Headers.Add(Header.ContentLength, Encoding.UTF8.GetByteCount(content).ToString());
         }
     }
+
 }

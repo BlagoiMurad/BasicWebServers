@@ -5,6 +5,7 @@ namespace BasicWebServer.Server.HTTP
 {
     public class HeaderCollection : IEnumerable<Header>
     {
+
         private readonly Dictionary<string, Header> headers;
 
         public HeaderCollection()
@@ -14,14 +15,46 @@ namespace BasicWebServer.Server.HTTP
 
         public int Count => this.headers.Count;
 
-        public void Add(string name , string value)
+        public void Add(string name, string value)
         {
             var header = new Header(name, value);
-            headers.Add(header.Name, header);
-
+            this.headers[name] = header;
         }
 
-        public IEnumerator<Header> GetEnumerator() => headers.Values.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public bool Contains(string name)
+        {
+            return headers.ContainsKey(name);
+        }
+
+        public string this[string name]
+        {
+            get
+            {
+                return headers[name].Value;
+            }
+
+            set
+            {
+                headers[name].Value = value;
+            }
+        }
+        public IEnumerator<Header> GetEnumerator()
+        {
+            return headers.Values.GetEnumerator();
+        }
+
+        internal void Add(Header header)
+        {
+            this.headers[header.Name] = header;
+        }
+
+
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
     }
 }
+
+

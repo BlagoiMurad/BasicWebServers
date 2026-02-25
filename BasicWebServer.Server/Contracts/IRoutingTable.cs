@@ -9,10 +9,13 @@ namespace BasicWebServer.Server.Contracts
 {
     public interface IRoutingTable
     {
-        IRoutingTable Map(string url, Method method, Response response);
-        IRoutingTable MapGet(string url, Response response);
-        IRoutingTable MapPost(string url, Response response);
-        //Response MatchRequest(Request request);
+        public IRoutingTable Map(string url, Method method, Response response);
 
+
+        public IRoutingTable MapGet(string url, Response response);
+
+        public IRoutingTable MapPost(string url, Response response);
     }
+
+
 }

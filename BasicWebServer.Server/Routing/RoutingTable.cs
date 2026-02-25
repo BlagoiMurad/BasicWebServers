@@ -14,27 +14,28 @@ namespace BasicWebServer.Server.Routing
     {
         private readonly Dictionary<Method, Dictionary<string, Response>> routes;
 
-       public RoutingTable()
+
+
+        public RoutingTable()
         {
             routes = new Dictionary<Method, Dictionary<string, Response>>()
             {
-                [Method.Get] = new Dictionary<string, Response>(),
+                [Method.GET] = new Dictionary<string, Response>(),
                 [Method.Post] = new Dictionary<string, Response>(),
                 [Method.Put] = new Dictionary<string, Response>(),
-                [Method.Delete] = new Dictionary<string, Response>(),
-
+                [Method.Delete] = new Dictionary<string, Response>()
             };
         }
-        
-
         public IRoutingTable Map(string url, Method method, Response response)
         {
-            switch (method) {
-                case Method.Get:
+            switch (method)
+            {
+                case Method.GET:
                     return MapGet(url, response);
-                    
-                    case Method.Post:
-                        return MapPost(url, response);
+
+                case Method.Post:
+                    return MapPost(url, response);
+
                 default:
                     throw new InvalidOperationException($"Method {method} is not supported.");
             }
@@ -42,34 +43,33 @@ namespace BasicWebServer.Server.Routing
 
         public IRoutingTable MapGet(string url, Response response)
         {
-           Guard.AgainstNull(url);
+            Guard.AgainstNull(url, nameof(url));
             Guard.AgainstNull(response, nameof(response));
 
-            routes[Method.Get][url] = response;
-
+            routes[Method.GET][url] = response;
             return this;
-
         }
 
         public IRoutingTable MapPost(string url, Response response)
         {
-            Guard.AgainstNull(url);
+            Guard.AgainstNull(url, nameof(url));
             Guard.AgainstNull(response, nameof(response));
 
             routes[Method.Post][url] = response;
-
             return this;
         }
 
-            public Response MatchRequest(Request request)
-            {
+        public Response MatchRequest(Request request)
+        {
             var requestMethod = request.Method;
             var requestUrl = request.Url;
-            if (!routes.ContainsKey(requestMethod) == false || routes[requestMethod].ContainsKey(requestUrl) == false)
-                {
-                    return new NotFoundResponse();
-                }
-routes[requestMethod][requestUrl];
+            if (routes.ContainsKey(requestMethod) == false ||
+                routes[requestMethod].ContainsKey(requestUrl) == false)
+            {
+                return new NotFoundResponse();
+            }
+            return routes[requestMethod][requestUrl];
         }
+
     }
 }

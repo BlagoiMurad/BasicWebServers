@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace BasicWebServer.Server.HTTP
 {
     public class Response
@@ -8,31 +10,44 @@ namespace BasicWebServer.Server.HTTP
 
             this.Headers = new HeaderCollection();
 
-            this.Headers.Add(Header.Server, "BasicWebServer");
-            this.Headers.Add(Header.ContentType, "text/plain; charset=UTF-8");
+            Headers.Add(new Header("Server", "BasicWebServer"));
+
         }
 
-        public StatusCode StatusCode { get; }
+        public StatusCode StatusCode { get; set; }
 
-        public override string? ToString()
+        public HeaderCollection Headers { get; set; } = new HeaderCollection();
+
+        public string Body { get; set; }
+        public Action<Request, Response> PreRenderAction { get; protected set; }
+
+        public override string ToString()
         {
-            var result = new System.Text.StringBuilder();
-            result.Append($"HTTP/1.1 {(int)StatusCode} {StatusCode}");
+            var result = new StringBuilder();
+
+
+            result.AppendLine($"HTTP/1.1 {(int)StatusCode} {StatusCode}");
+
 
             foreach (var header in Headers)
             {
-                result.Append($"{header.Name} : {header.Value}");
+                result.AppendLine($"{header.Name}: {header.Value}");
             }
+
+
             result.AppendLine();
-            if(string.IsNullOrEmpty(Body) == false)
+
+            if (!string.IsNullOrWhiteSpace(Body))
             {
                 result.Append(Body);
             }
+
             return result.ToString();
         }
 
-        public HeaderCollection Headers { get; }
 
-        public string Body { get; set; }
+
+
+
     }
 }

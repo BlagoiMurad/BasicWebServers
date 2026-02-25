@@ -3,9 +3,9 @@ namespace BasicWebServer.Server.HTTP
     public enum StatusCode
     {
         OK = 200,
-        Found = 302,
-        BadRequest = 400,
-        unauthorized = 401,
+        Found = 301,
         NotFound = 404,
+        Unauthorized = 401,
+        BadRequest = 400
     }
 }

@@ -8,6 +8,7 @@ namespace BasicWebServer.Server.Common
         {
             if (value == null)
             {
+
                 throw new ArgumentNullException(name);
             }
         }

@@ -2,10 +2,10 @@ namespace BasicWebServer.Server.HTTP
 {
     public enum Method
     {
-        Get,
+        GET,
         Post,
         Put,
-        Delete,
+        Delete
 
     }
 }

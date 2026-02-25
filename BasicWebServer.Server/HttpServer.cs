@@ -10,82 +10,92 @@ namespace BasicWebServer.Server
 {
     public class HttpServer
     {
-        private readonly IPAddress ipAddress;
-        private readonly int port;
-        private readonly TcpListener listener;
-        private readonly RoutingTable routingTable;
-        public HttpServer(string address, int port, Action<IRoutingTable> routingTableConfiguration)
-        {
-            this.ipAddress = IPAddress.Parse(address);
-            this.port = port;
+      
+            private readonly IPAddress ipAddress;
+            private readonly int port;
+            private readonly TcpListener listener;
 
-            this.listener = new TcpListener(this.ipAddress, this.port);
-            routingTableConfiguration(this.routingTable = new RoutingTable());
-        }
+            private readonly RoutingTable routes;
 
-        public HttpServer(int port, Action<IRoutingTable> routingTable)
-            :this("127.0.1", port, routingTable)
-        {
-
-        }
-        public HttpServer( Action<IRoutingTable> routingTable)
-           : this(8080,  routingTable)
-        {
-
-        }
-
-        public void Start()
-        {
-            this.listener.Start();
-
-            while (true)
+            public HttpServer(string address, int port, Action<IRoutingTable> routingTableConfiguration)
             {
-                TcpClient client = this.listener.AcceptTcpClient();
+                this.ipAddress = IPAddress.Parse(address);
+                this.port = port;
+                this.listener = new TcpListener(this.ipAddress, this.port);
 
-                using NetworkStream networkStream = client.GetStream();
-
-                string requestString = ReadRequest(networkStream);
-                Console.WriteLine(requestString);
-                var request = Request.Parse(requestString);
-                WriteResponse(networkStream, "Hello from the server!");
-
-                var response = this.routingTable.MatchRequest(request);
-                WriteResponse(networkStream, response);
-                 client.Close();
+                routingTableConfiguration(this.routes = new RoutingTable());
             }
-        }
 
-        public static void WriteResponse(NetworkStream networkStream, Response response)
-        {
-            var responseBytes = Encoding.UTF8.GetBytes(response.ToString());
-            networkStream.Write(res);
-        }
 
-        private static string ReadRequest(NetworkStream networkStream)
-        {
-            byte[] buffer = new byte[1024];
-
-            StringBuilder request = new StringBuilder();
-
-            int bytesRead;
-            int totalBytesReceived = 0;
-
-            do
+            public HttpServer(int port, Action<IRoutingTable> routingTable) : this("127.0.0.1", port, routingTable)
             {
-                bytesRead = networkStream.Read(buffer, 0, buffer.Length);
-                totalBytesReceived += bytesRead;
 
-                if (totalBytesReceived > 10000)
+            }
+            public HttpServer(Action<IRoutingTable> routingTable) : this(8081, routingTable)
+            {
+
+            }
+
+
+            public async Task Start()
+            {
+                this.listener.Start();
+
+                Console.WriteLine($"Server started on port {port}. ");
+                Console.WriteLine("Listening for requests...");
+
+                while (true)
                 {
-                    throw new InvalidOperationException("Request is too large.");
+                    TcpClient client = await this.listener.AcceptTcpClientAsync();
+
+                    _ = Task.Run(async () =>
+                    {
+                        using NetworkStream networkStream = client.GetStream();
+
+                        var requestText = await ReadRequestAsync(networkStream);
+                        Console.WriteLine(requestText);
+                        var request = Request.Parse(requestText);
+
+                        // client.Close();
+
+                        var response = routes.MatchRequest(request);
+
+                        if (response.PreRenderAction != null)
+                        {
+                            response.PreRenderAction(request, response);
+                        }
+                        await WriteResponseAsync(networkStream, response);
+
+                        client.Close();
+                    });
+
+
+                }
+            }
+
+            private async Task WriteResponseAsync(NetworkStream networkStream, Response response)
+            {
+                var responseBytes = Encoding.UTF8.GetBytes(response.ToString());
+
+                await networkStream.WriteAsync(responseBytes, 0, responseBytes.Length);
+                await networkStream.FlushAsync();
+            }
+            private async Task<string> ReadRequestAsync(NetworkStream networkStream)
+            {
+                var buffer = new byte[8192];
+                var requestBuilder = new StringBuilder();
+
+                int bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length);
+
+                if (bytesRead > 0)
+                {
+                    requestBuilder.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
                 }
 
-                string requestPart = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                request.Append(requestPart);
+                return requestBuilder.ToString();
             }
-            while (networkStream.DataAvailable);
-
-            return request.ToString();
         }
+
+
     }
-}
+
