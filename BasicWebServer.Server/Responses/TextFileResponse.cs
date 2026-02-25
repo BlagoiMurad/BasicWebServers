@@ -16,7 +16,7 @@ namespace BasicWebServer.Server.Responses
         {
             Filename = filename;
 
-            Header.Add(Header.ContentType, ContentType.PlainText);
+            Headers.Add(new Header(Header.ContentType, ContentType.PlainText));
         }
 
 
@@ -29,8 +29,8 @@ namespace BasicWebServer.Server.Responses
 
             var fileBytesCount = Encoding.UTF8.GetByteCount(Body);
 
-            Header.Add("Content-Length", fileBytesCount.ToString());
-            Header.Add("Content-Disposition", $"attachment; filename=\"{Filename}\"");
+            Headers.Add(new Header(Header.ContentLength, fileBytesCount.ToString()));
+            Headers.Add(new Header(Header.ContentDisposition, $"attachment; filename=\"{Filename}\""));
 
             return base.ToString();
         }
