@@ -31,38 +31,38 @@ namespace BasicWebServer.Demo
             var server = new HttpServer(routes =>
                 routes
 
-                // Forms
+                
                 .MapGet("/HTML", new HtmlResponse(formView.HTML))
                 .MapPost("/HTML", new TextResponse("", AddFormDataAction))
 
-                // Redirect
+                
                 .MapGet("/redirect", new RedirectResponse("https://www.aboutyou.com"))
 
-                // File download
+                
                 .MapGet("/content", new HtmlResponse(DownloadForm.Html))
                 .MapPost("/content", new TextFileResponse(Filename))
 
-                // Cookies (HTML string, но action през TextResponse)
+                
                 .MapGet("/Cookies", new TextResponse("", AddCookiesAction))
 
-                // Session
+                
                 .MapGet("/Session", new TextResponse("", DisplaySessionInfoAction))
 
-                // Login
+                
                 .MapGet("/Login", new HtmlResponse(LoginForm))
-                .MapPost("/Login", new TextResponse("", LoginAction))
+               .MapPost("/Login", new TextResponse("", LoginAction))
 
-                // Logout
+                
                 .MapGet("/Logout", new TextResponse("", LogoutAction))
 
-                // Profile
+                
                 .MapGet("/UserProfile", new TextResponse("", GetUserDataAction))
             );
 
             await server.Start();
         }
 
-        // ----------------- FORM -----------------
+        
         private static void AddFormDataAction(Request request, Response response)
         {
             response.Body = "";
@@ -73,7 +73,7 @@ namespace BasicWebServer.Demo
             }
         }
 
-        // ----------------- COOKIES -----------------
+        
         private static void AddCookiesAction(Request request, Response response)
         {
             var bodyText = string.Empty;
@@ -110,7 +110,7 @@ namespace BasicWebServer.Demo
             response.Body = bodyText;
         }
 
-        // ----------------- SESSION -----------------
+      
         private static void DisplaySessionInfoAction(Request request, Response response)
         {
             if (!request.Session.ContainsKey(Session.CurrentDateKey))
@@ -122,7 +122,7 @@ namespace BasicWebServer.Demo
             response.Body = $"Stored date: {request.Session[Session.CurrentDateKey]}";
         }
 
-        // ----------------- LOGIN -----------------
+        
         private static void LoginAction(Request request, Response response)
         {
             request.Session.Clear();
@@ -146,14 +146,14 @@ namespace BasicWebServer.Demo
             }
         }
 
-        // ----------------- LOGOUT -----------------
+     
         private static void LogoutAction(Request request, Response response)
         {
             request.Session.Clear();
             response.Body = "<h1>Logged out.</h1>";
         }
 
-        // ----------------- PROFILE -----------------
+      
         private static void GetUserDataAction(Request request, Response response)
         {
             if (request.Session.ContainsKey(Session.UserKey))
@@ -165,7 +165,7 @@ namespace BasicWebServer.Demo
             response.Body = "<h1>You are not logged in.</h1><a href='/Login'>Go to Login</a>";
         }
 
-        // ----------------- FILE DOWNLOAD -----------------
+   
         private static async Task<string> DownloadWebSiteContent(string url)
         {
             using var client = new HttpClient();
